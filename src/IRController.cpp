@@ -1,3 +1,7 @@
+// todo: add support fot MQTT in addition/instead of http calls.
+// should be possible to enable and disable each option using configuration page
+
+#include <Arduino.h>
 #include <FS.h>                                               // This needs to be first, or it all crashes and burns
 
 #include <IRremoteESP8266.h>
@@ -22,7 +26,7 @@
 const bool getExternalIP = true;                              // Set to false to disable querying external IP
 
 const bool getTime = true;                                    // Set to false to disable querying for the time
-const int timeZone = -5;                                      // Timezone (-5 is EST)
+const int timeZone = 2;                                      // Timezone (-5 is EST)
 
 const bool enableMDNSServices = true;                         // Use mDNS services, must be enabled for ArduinoOTA
 
@@ -99,6 +103,24 @@ void sendCodePage(Code selCode);
 void sendCodePage(Code selCode, int httpcode);
 void cvrtCode(Code& codeData, decode_results *results);
 void copyCode (Code& c1, Code& c2);
+
+void sendHomePage();
+void sendHomePage(String message, String header);
+void sendHomePage(String message, String header, int type);
+void sendHomePage(String message, String header, int type, int httpcode);
+
+void sendHeader();
+void sendHeader(int httpcode);
+
+void rawblast(JsonArray &raw, int khz, int rdelay, int pulse, int pdelay, int repeat, IRsend irsend,int duty);
+void pronto(JsonArray &pronto, int rdelay, int pulse, int pdelay, int repeat, IRsend irsend);
+void irblast(String type, String dataStr, unsigned int len, int rdelay, int pulse, int pdelay, int repeat, long address, IRsend irsend);
+
+int rokuCommand(String ip, String data, int repeat, int rdelay);
+IRsend pickIRsend (int out);
+String bin2hex(const uint8_t* bin, const int length);
+String getValue(String data, char separator, int index);
+void roomba_send(int code, int pulse, int pdelay, IRsend irsend);
 
 Code last_recv;
 Code last_recv_2;
@@ -427,6 +449,8 @@ bool setupWifi(bool resetConf) {
   sgw.fromString(static_gw);
   ssn.fromString(static_sn);
   Serial.println("Using Static IP");
+  // TODO: Enable dynamic IP - add the parameter to configuration portal and
+  // call the line below if the parameter is true
   wifiManager.setSTAStaticIPConfig(sip, sgw, ssn);
 
   // fetches ssid and pass and tries to connect
